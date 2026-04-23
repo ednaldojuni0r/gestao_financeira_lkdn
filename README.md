@@ -2,7 +2,7 @@
 
 Aplicativo pessoal de gestão financeira integrado ao Google Sheets, hospedado no GitHub Pages. Permite visualizar receitas, despesas, gráficos e lançamentos diretamente no navegador, sem instalar nada.
 
-🔗 **Acesse:** [[[ednaldojuni0r.github.io/gestor-financeiro](https://github.com/ednaldojuni0r/gestao_financeira_lkdn)](https://ednaldojuni0r.github.io/gestao_financeira_lkdn/)](https://ednaldojuni0r.github.io/gestao_financeira_lkdn/)
+🔗 **Acesse:** [ednaldojuni0r.github.io/gestor-financeiro](https://github.com/ednaldojuni0r/gestao_financeira_lkdn)](https://github.com/ednaldojuni0r/gestao_financeira_lkdn)](https://ednaldojuni0r.github.io/gestao_financeira_lkdn/)](https://ednaldojuni0r.github.io/gestao_financeira_lkdn/)
 
 ---
 
