@@ -663,7 +663,7 @@ async function submitForm(){
   var desc=document.getElementById('fDesc').value.trim(),valorRaw=document.getElementById('fValor').value,dataVal=document.getElementById('fData').value,mesRef=document.getElementById('fMesRef').value,anoRef=document.getElementById('fAnoRef').value,rec=document.getElementById('fRec').value,nParcEl=document.getElementById('fParcelas');
   if(!desc||!valorRaw||!dataVal||!mesRef){showFormMsg('warn','⚠️ Preencha: Tipo, Data, Mês/Ano, Descrição e Valor.');return;}
   if(rec==='Parcelada'&&(!nParcEl.value||parseInt(nParcEl.value)<2)){showFormMsg('warn','⚠️ Informe o número de parcelas (mínimo 2).');return;}
-  var payload={acao:'insert',tipo:formTipo,dataManual:dataVal,mesReferencia:mesRef,anoReferencia:parseInt(anoRef),descricao:desc,valorTotal:parseFloat(valorRaw),cartao:document.getElementById('fCartao').value,categoria:document.getElementById('fCat').value,subcategoria:document.getElementById('fSubcat').value,tags:document.getElementById('fTag').value,recorrencia:formTipo==='Receita'?'Única':rec,numParcelas:rec==='Parcelada'?parseInt(nParcEl.value):1,isCredito:document.getElementById('fCredito').value};
+  var payload={acao:'insert',tipo:formTipo,dataManual:dataVal,mesReferencia:mesRef,anoReferencia:parseInt(anoRef),descricao:desc,valorTotal:parseFloat(String(valorRaw).replace(/\./g,'').replace(',','.')),,cartao:document.getElementById('fCartao').value,categoria:document.getElementById('fCat').value,subcategoria:document.getElementById('fSubcat').value,tags:document.getElementById('fTag').value,recorrencia:formTipo==='Receita'?'Única':rec,numParcelas:rec==='Parcelada'?parseInt(nParcEl.value):1,isCredito:document.getElementById('fCredito').value};
   var btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent=rec==='Parcelada'?'💾 Salvando '+payload.numParcelas+' parcelas...':rec==='Fixa'?'💾 Salvando 12 meses...':'💾 Salvando...';
   try{
     await fetch(ASU,{method:'POST',body:JSON.stringify(payload),mode:'no-cors'});
@@ -679,10 +679,12 @@ document.addEventListener('DOMContentLoaded',function(){
   var el=document.getElementById(id);
   if(!el)return;
   el.addEventListener('input',function(){
-    var v=this.value.replace(/[^0-9]/g,'');
+    var v=this.value.replace(/[^0-9,.]/g,'');
     if(!v){this.value='';return;}
-    var n=parseInt(v)/100;
-    this.value=n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    var clean=v.replace(/\./g,'').replace(',','.');
+    var num=parseFloat(clean);
+    if(isNaN(num)){this.value='';return;}
+    this.value=num.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
   });
 });
 });
