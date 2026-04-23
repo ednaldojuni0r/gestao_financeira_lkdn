@@ -185,7 +185,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:24px 0
 
     <div class="form-grid" style="margin-bottom:14px;">
       <div class="fg s2"><div class="flabel">Descrição</div><input type="text" class="finput" id="eDesc"></div>
-      <div class="fg"><div class="flabel">Valor (R$)</div><input type="number" class="finput" id="eValor" step="0.01" min="0"></div>
+      <div class="fg"><div class="flabel">Valor (R$)</div><input type="text" class="finput" id="eValor" inputmode="decimal"></div>
       <div class="fg"><div class="flabel">Cartão / Banco</div><select class="fselect" id="eCartao"></select></div>
       <div class="fg"><div class="flabel">Categoria</div><select class="fselect" id="eCat" onchange="onModalCatChange()"></select></div>
       <div class="fg"><div class="flabel">Subcategoria</div><select class="fselect" id="eSubcat"></select></div>
@@ -345,7 +345,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:24px 0
       <div class="form-section">Detalhes</div>
       <div class="form-grid">
         <div class="fg s2"><div class="flabel">Descrição</div><input type="text" class="finput" id="fDesc" placeholder="Ex: Almoço, Netflix, Salário..."></div>
-        <div class="fg"><div class="flabel">Valor Total (R$)</div><input type="number" class="finput" id="fValor" placeholder="0.00" step="0.01" min="0"></div>
+        <div class="fg"><div class="flabel">Valor Total (R$)</div><input type="text" class="finput" id="fValor" placeholder="0,00" inputmode="decimal"></div>
         <div class="fg"><div class="flabel">Cartão / Banco</div><select class="fselect" id="fCartao"><option value="">Selecione...</option></select></div>
         <div class="fg"><div class="flabel">Categoria</div><select class="fselect" id="fCat" onchange="onCatChange()"><option value="">Selecione...</option></select></div>
         <div class="fg"><div class="flabel">Subcategoria</div><select class="fselect" id="fSubcat"><option value="">Selecione a categoria</option></select></div>
@@ -663,7 +663,7 @@ async function submitForm(){
   var desc=document.getElementById('fDesc').value.trim(),valorRaw=document.getElementById('fValor').value,dataVal=document.getElementById('fData').value,mesRef=document.getElementById('fMesRef').value,anoRef=document.getElementById('fAnoRef').value,rec=document.getElementById('fRec').value,nParcEl=document.getElementById('fParcelas');
   if(!desc||!valorRaw||!dataVal||!mesRef){showFormMsg('warn','⚠️ Preencha: Tipo, Data, Mês/Ano, Descrição e Valor.');return;}
   if(rec==='Parcelada'&&(!nParcEl.value||parseInt(nParcEl.value)<2)){showFormMsg('warn','⚠️ Informe o número de parcelas (mínimo 2).');return;}
-  var payload={acao:'insert',tipo:formTipo,dataManual:dataVal,mesReferencia:mesRef,anoReferencia:parseInt(anoRef),descricao:desc,valorTotal:parseFloat(String(valorRaw).replace(/\./g,'').replace(',','.')),cartao:document.getElementById('fCartao').value,categoria:document.getElementById('fCat').value,subcategoria:document.getElementById('fSubcat').value,tags:document.getElementById('fTag').value,recorrencia:formTipo==='Receita'?'Única':rec,numParcelas:rec==='Parcelada'?parseInt(nParcEl.value):1,isCredito:document.getElementById('fCredito').value};
+  var payload={acao:'insert',tipo:formTipo,dataManual:dataVal,mesReferencia:mesRef,anoReferencia:parseInt(anoRef),descricao:desc,valorTotal:parseFloat(valorRaw),cartao:document.getElementById('fCartao').value,categoria:document.getElementById('fCat').value,subcategoria:document.getElementById('fSubcat').value,tags:document.getElementById('fTag').value,recorrencia:formTipo==='Receita'?'Única':rec,numParcelas:rec==='Parcelada'?parseInt(nParcEl.value):1,isCredito:document.getElementById('fCredito').value};
   var btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent=rec==='Parcelada'?'💾 Salvando '+payload.numParcelas+' parcelas...':rec==='Fixa'?'💾 Salvando 12 meses...':'💾 Salvando...';
   try{
     await fetch(ASU,{method:'POST',body:JSON.stringify(payload),mode:'no-cors'});
@@ -674,7 +674,31 @@ async function submitForm(){
   btn.disabled=false;btn.textContent='💾 Salvar no Google Sheets';
 }
 function showFormMsg(type,html){var el=document.getElementById('formMsg');el.className='form-msg '+type;el.innerHTML=html;el.style.display='block';if(type==='ok')setTimeout(function(){el.style.display='none';},8000);}
-
+document.addEventListener('DOMContentLoaded',function(){
+['fValor','eValor'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  el.addEventListener('input',function(){
+    // Remove tudo exceto números e vírgula
+    var v=this.value.replace(/[^0-9,]/g,'');
+    if(!v){this.value='';return;}
+    // Separa parte inteira e decimal pela vírgula
+    var parts=v.split(',');
+    var intPart=parts[0].replace(/^0+/,'') || '0';
+    var intNum=parseInt(intPart,10);
+    // Formata parte inteira com ponto de milhar
+    var intFormatted=isNaN(intNum)?'0':intNum.toLocaleString('pt-BR');
+    // Monta resultado
+    if(parts.length>1){
+      // Tem vírgula — mantém decimais como digitado (max 2 casas)
+      this.value=intFormatted+','+(parts[1]||'').substring(0,2);
+    } else {
+      this.value=intFormatted;
+    }
+  });
+});
+});
+});
 function init(){loadFallback();buildPills();populateForm();applyPF();doSync();}
 init();
 </script>
