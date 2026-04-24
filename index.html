@@ -679,24 +679,11 @@ document.addEventListener('DOMContentLoaded',function(){
   var el=document.getElementById(id);
   if(!el)return;
   el.addEventListener('input',function(){
-    // Remove tudo exceto números e vírgula
-    var v=this.value.replace(/[^0-9,]/g,'');
+    var v=this.value.replace(/[^0-9]/g,'');
     if(!v){this.value='';return;}
-    // Separa parte inteira e decimal pela vírgula
-    var parts=v.split(',');
-    var intPart=parts[0].replace(/^0+/,'') || '0';
-    var intNum=parseInt(intPart,10);
-    // Formata parte inteira com ponto de milhar
-    var intFormatted=isNaN(intNum)?'0':intNum.toLocaleString('pt-BR');
-    // Monta resultado
-    if(parts.length>1){
-      // Tem vírgula — mantém decimais como digitado (max 2 casas)
-      this.value=intFormatted+','+(parts[1]||'').substring(0,2);
-    } else {
-      this.value=intFormatted;
-    }
+    var n=parseInt(v)/100;
+    this.value=n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
   });
-});
 });
 });
 function init(){loadFallback();buildPills();populateForm();applyPF();doSync();}
