@@ -407,26 +407,21 @@ function pCSV(text){var lines=text.split('\n').filter(function(l){return l.trim(
 var TT={backgroundColor:'#161b2a',borderColor:'rgba(255,255,255,0.08)',borderWidth:1,titleColor:'#e8eaf0',bodyColor:'#6b7280',titleFont:{family:'Syne',weight:'600'},bodyFont:{family:'DM Sans'}};
 var TK={color:'#6b7280',font:{family:'DM Sans',size:11}};
 var GR={color:'rgba(255,255,255,0.04)'};
-var FB=[
-  {tipo:'Receita',data:'01/01/2026',desc:'Reembolso Thiago',valor:123.20,cat:'Outros',subcat:'Outras receitas',mes:'janeiro/26',cartao:'',tags:'N/A',credito:'Não',rowIndex:2},
-  {tipo:'Receita',data:'18/01/2026',desc:'Rendimento automático',valor:62.71,cat:'Investimentos',subcat:'Rendimento Automático',mes:'janeiro/26',cartao:'',tags:'N/A',credito:'Não',rowIndex:3},
-  {tipo:'Receita',data:'18/01/2026',desc:'Reembolsos Diversos',valor:189.72,cat:'Outros',subcat:'Outras receitas',mes:'janeiro/26',cartao:'',tags:'N/A',credito:'Não',rowIndex:4},
-  {tipo:'Despesa',data:'02/01/2026',desc:'Corte de Cabelo',valor:169.90,cat:'Pessoais',subcat:'Barbeiro',mes:'janeiro/26',cartao:'',tags:'Pessoal',credito:'Não',rowIndex:5},
-  {tipo:'Despesa',data:'02/01/2026',desc:'Shein',valor:322.44,cat:'Vestiário',subcat:'Roupas',mes:'janeiro/26',cartao:'',tags:'Pessoal',credito:'Não',rowIndex:6},
-  {tipo:'Despesa',data:'02/01/2026',desc:'ACM Academia (4/6)',valor:129.88,cat:'Pessoais',subcat:'Academia',mes:'janeiro/26',cartao:'',tags:'Pessoal',credito:'Não',rowIndex:7},
-  {tipo:'Despesa',data:'02/01/2026',desc:'Aula de Inglês',valor:320.00,cat:'Educação',subcat:'Cursos Online',mes:'janeiro/26',cartao:'',tags:'Pessoal',credito:'Não',rowIndex:8},
-  {tipo:'Despesa',data:'04/01/2026',desc:'Financiamento',valor:1332.54,cat:'Contas',subcat:'Financiamento',mes:'janeiro/26',cartao:'',tags:'Contas',credito:'Não',rowIndex:9},
-  {tipo:'Despesa',data:'10/01/2026',desc:'Condomínio',valor:555.09,cat:'Contas',subcat:'Condomínio',mes:'janeiro/26',cartao:'',tags:'Contas',credito:'Não',rowIndex:10},
-  {tipo:'Despesa',data:'16/01/2026',desc:'Terapia',valor:120.00,cat:'Saúde',subcat:'Terapia',mes:'janeiro/26',cartao:'',tags:'Pessoal',credito:'Não',rowIndex:11}
-];
+// Array vazio - sem dados de demonstração
+var FB=[];
 function setStatus(c,m){document.getElementById('statusDot').className='dot '+c;document.getElementById('statusText').textContent=m;}
 function showBanner(t,h){var b=document.getElementById('banner');b.className='banner '+t;b.innerHTML=h;}
 function hideBanner(){document.getElementById('banner').className='banner hidden';}
 function loadFallback(){
   allData=FB.map(function(r){return Object.assign({},r,{mesKey:toMK(r.mes)});});
   configData={bancos:['Itaú','Bradesco','Nubank','Inter','C6 Bank','Caixa'],categorias:{Receita:{Investimentos:['Dividendos','Rendimento Automático'],Outros:['Outras receitas','Reembolsos'],Trabalho:['Salário','Freelance']},Despesa:{Alimentação:['Supermercado','Padaria','Refeição fora de casa (trabalho)'],Lazer:['Restaurantes / bares / festas','Ifood'],Contas:['Financiamento','Condomínio','Internet','Celular','Conta de água'],Vestiário:['Roupas','Calçados'],Saúde:['Medicamentos','Terapia'],Pessoais:['Barbeiro','Academia'],Transporte:['Uber','Combustível'],Assinaturas:['Streaming','Seguros'],Presentes:['Presentes diversos'],Diversas:['Outros gastos'],Casa:['Móveis','Utensílios'],Educação:['Cursos Online','Livros']}}};
-  setStatus('orange','📂 Dados locais Jan/26 — clique em Sincronizar');
-  showBanner('warn','📊 Exibindo <strong>Janeiro/2026</strong>. Clique em <strong>🔄 Sincronizar</strong> para dados ao vivo de todos os meses.');
+  if(allData.length === 0) {
+    setStatus('orange','📭 Nenhum dado disponível — clique em Sincronizar');
+    showBanner('warn','📊 Nenhum dado encontrado. Clique em <strong>🔄 Sincronizar</strong> para carregar dados da sua planilha ou use a aba <strong>➕ Novo</strong> para adicionar lançamentos.');
+  } else {
+    setStatus('orange','📂 Dados locais — clique em Sincronizar');
+    showBanner('warn','📊 Exibindo dados locais. Clique em <strong>🔄 Sincronizar</strong> para atualizar com dados da planilha.');
+  }
 }
 function procCSV(rows){
   var parsed=[];
@@ -456,8 +451,13 @@ async function doSync(){
     procCSV(pCSV(await cr.text()));
     try{var cfr=await fetch(ASU+'?t='+Date.now());if(cfr.ok){var cfg=await cfr.json();if(cfg&&cfg.config)configData=cfg.config;}}catch(e2){}
     buildPills();populateForm();applyPF();
-    setStatus('green','✅ Sincronizado — '+allData.length+' lançamentos');
-    showBanner('ok','✅ <strong>'+allData.length+' lançamentos</strong> carregados da planilha!');
+    if(allData.length === 0) {
+      setStatus('orange','📭 Planilha vazia — 0 lançamentos');
+      showBanner('warn','📭 Sua planilha do Google Sheets está <strong>vazia</strong>. Use a aba <strong>➕ Novo</strong> para adicionar seus primeiros lançamentos!');
+    } else {
+      setStatus('green','✅ Sincronizado — '+allData.length+' lançamentos');
+      showBanner('ok','✅ <strong>'+allData.length+' lançamentos</strong> carregados da planilha!');
+    }
     document.getElementById('lastSync').textContent='Última sync: '+new Date().toLocaleTimeString('pt-BR');
     setTimeout(hideBanner,5000);
   }catch(e){
