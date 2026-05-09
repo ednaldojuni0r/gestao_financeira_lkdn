@@ -1,4 +1,4 @@
-# 💎 Gestor Financeiro Pro — Ed
+# 💎 Gestor Financeiro
 
 Aplicativo pessoal de gestão financeira integrado ao Google Sheets, hospedado no GitHub Pages. Permite visualizar receitas, despesas, gráficos e lançamentos diretamente no navegador, sem instalar nada.
 
