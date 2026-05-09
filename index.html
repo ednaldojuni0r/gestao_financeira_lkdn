@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestor Financeiro Pro</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap
-">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{--bg:#0a0d14;--sf:#111520;--sf2:#161b2a;--sf3:#1c2235;--bd:rgba(255,255,255,0.07);--ac:#00e5b0;--ac2:#4f8eff;--dg:#ff4f6d;--wn:#ffb547;--tx:#e8eaf0;--mt:#6b7280;--r:14px;}
@@ -226,8 +225,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:24px 0
 <div class="app">
   <nav>
     <div class="logo">
-      <div class="logo-icon">💎</div>
-      <div class="logo-text">Gestor<span>Pro</span></div>
+      <div class="logo-icon">💸</div>
+      <div class="logo-text">Gestor<span>Financeiro</span></div>
     </div>
     <div class="nav-right">
       <div class="tab-bar">
@@ -455,7 +454,7 @@ async function doSync(){
     var cr=await fetch(CSV+'&t='+Date.now(),{redirect:'follow'});
     if(!cr.ok)throw new Error('HTTP '+cr.status);
     procCSV(pCSV(await cr.text()));
-    try{var cfr=await fetch(ASU+'?t='+Date.now());if(cfr.ok){var cfg=await cfr.json();if(cfg&&cfg.categorias)configData=cfg;}}catch(e2){}
+    try{var cfr=await fetch(ASU+'?t='+Date.now());if(cfr.ok){var cfg=await cfr.json();if(cfg&&cfg.config)configData=cfg.config;}}catch(e2){}
     buildPills();populateForm();applyPF();
     setStatus('green','✅ Sincronizado — '+allData.length+' lançamentos');
     showBanner('ok','✅ <strong>'+allData.length+' lançamentos</strong> carregados da planilha!');
@@ -631,11 +630,11 @@ async function confirmDelete(){
 async function saveEdit(){
   if(editingIdx===null)return;
   var d=allData[editingIdx];if(!d)return;
-  var desc=document.getElementById('eDesc').value.trim(),valorRaw=document.getElementById('eValor').value,dataVal=document.getElementById('eData').value,mesRef=document.getElementById('eMesRef').value,anoRef=document.getElementById('eAnoRef').value;
+  var desc=document.getElementById('eDesc').value.trim(),valorRaw=document.getElementById('eValor').dataset.rawValue||document.getElementById('eValor').value,dataVal=document.getElementById('eData').value,mesRef=document.getElementById('eMesRef').value,anoRef=document.getElementById('eAnoRef').value;
   if(!desc||!valorRaw||!dataVal||!mesRef){showModalMsg('err','⚠️ Preencha Data, Mês/Ano, Descrição e Valor.');return;}
   var btn=document.getElementById('eSaveBtn');btn.disabled=true;btn.textContent='💾 Salvando...';
   var dtParts=dataVal.split('-');var dataFmt=dtParts[2]+'/'+dtParts[1]+'/'+dtParts[0];
-  var payload={acao:'update',rowIndex:d.rowIndex,tipo:modalTipo,dataManual:dataVal,mesReferencia:mesRef,anoReferencia:parseInt(anoRef),descricao:desc,valorTotal:parseFloat(String(valorRaw).replace(/\./g,"").replace(",",".")),cartao:document.getElementById('eCartao').value,categoria:document.getElementById('eCat').value,subcategoria:document.getElementById('eSubcat').value,tags:document.getElementById('eTag').value,isCredito:document.getElementById('eCredito').value,recorrencia:'Única',numParcelas:1};
+  var payload={acao:'update',rowIndex:d.rowIndex,tipo:modalTipo,dataManual:dataVal,mesReferencia:mesRef,anoReferencia:parseInt(anoRef),descricao:desc,valorTotal:valorRaw,cartao:document.getElementById('eCartao').value,categoria:document.getElementById('eCat').value,subcategoria:document.getElementById('eSubcat').value,tags:document.getElementById('eTag').value,isCredito:document.getElementById('eCredito').value,recorrencia:'Única',numParcelas:1};
   try{
     await fetch(ASU,{method:'POST',body:JSON.stringify(payload),mode:'no-cors'});
     d.tipo=modalTipo;d.data=dataFmt;d.desc=desc;d.valor=parseFloat(valorRaw);d.cat=payload.categoria;d.subcat=payload.subcategoria;d.cartao=payload.cartao;d.tags=payload.tags;d.credito=payload.isCredito;
@@ -660,10 +659,10 @@ function refreshCatSelect(){var cats=(configData.categorias&&configData.categori
 function onCatChange(){var cat=document.getElementById('fCat').value;var cats=(configData.categorias&&configData.categorias[formTipo])?configData.categorias[formTipo]:{};var subs=(cats&&cats[cat])?cats[cat]:[];var sel=document.getElementById('fSubcat');sel.innerHTML='<option value="">Selecione...</option>';subs.forEach(function(s){sel.innerHTML+='<option value="'+s+'">'+s+'</option>';});}
 function onRecChange(){document.getElementById('fParcelasWrap').style.display=document.getElementById('fRec').value==='Parcelada'?'flex':'none';}
 async function submitForm(){
-  var desc=document.getElementById('fDesc').value.trim(),valorRaw=document.getElementById('fValor').value,dataVal=document.getElementById('fData').value,mesRef=document.getElementById('fMesRef').value,anoRef=document.getElementById('fAnoRef').value,rec=document.getElementById('fRec').value,nParcEl=document.getElementById('fParcelas');
+  var desc=document.getElementById('fDesc').value.trim(),valorRaw=document.getElementById('fValor').dataset.rawValue||document.getElementById('fValor').value,dataVal=document.getElementById('fData').value,mesRef=document.getElementById('fMesRef').value,anoRef=document.getElementById('fAnoRef').value,rec=document.getElementById('fRec').value,nParcEl=document.getElementById('fParcelas');
   if(!desc||!valorRaw||!dataVal||!mesRef){showFormMsg('warn','⚠️ Preencha: Tipo, Data, Mês/Ano, Descrição e Valor.');return;}
   if(rec==='Parcelada'&&(!nParcEl.value||parseInt(nParcEl.value)<2)){showFormMsg('warn','⚠️ Informe o número de parcelas (mínimo 2).');return;}
-  var payload={acao:'insert',tipo:formTipo,dataManual:dataVal,mesReferencia:mesRef,anoReferencia:parseInt(anoRef),descricao:desc,valorTotal:parseFloat(valorRaw),cartao:document.getElementById('fCartao').value,categoria:document.getElementById('fCat').value,subcategoria:document.getElementById('fSubcat').value,tags:document.getElementById('fTag').value,recorrencia:formTipo==='Receita'?'Única':rec,numParcelas:rec==='Parcelada'?parseInt(nParcEl.value):1,isCredito:document.getElementById('fCredito').value};
+  var payload={acao:'insert',tipo:formTipo,dataManual:dataVal,mesReferencia:mesRef,anoReferencia:parseInt(anoRef),descricao:desc,valorTotal:valorRaw,cartao:document.getElementById('fCartao').value,categoria:document.getElementById('fCat').value,subcategoria:document.getElementById('fSubcat').value,tags:document.getElementById('fTag').value,recorrencia:formTipo==='Receita'?'Única':rec,numParcelas:rec==='Parcelada'?parseInt(nParcEl.value):1,isCredito:document.getElementById('fCredito').value};
   var btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent=rec==='Parcelada'?'💾 Salvando '+payload.numParcelas+' parcelas...':rec==='Fixa'?'💾 Salvando 12 meses...':'💾 Salvando...';
   try{
     await fetch(ASU,{method:'POST',body:JSON.stringify(payload),mode:'no-cors'});
@@ -680,8 +679,9 @@ document.addEventListener('DOMContentLoaded',function(){
   if(!el)return;
   el.addEventListener('input',function(){
     var v=this.value.replace(/[^0-9]/g,'');
-    if(!v){this.value='';return;}
+    if(!v){this.value='';this.dataset.rawValue='';return;}
     var n=parseInt(v)/100;
+    this.dataset.rawValue=n.toString();
     this.value=n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
   });
 });
