@@ -97,6 +97,29 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:24px 0
 .clear-filters-btn:hover{border-color:var(--dg);color:var(--dg);}
 .filter-count{font-size:11px;color:var(--ac);font-weight:600;}
 
+/* ═══ MODAL DETALHES CATEGORIA ═══ */
+.category-detail-modal{display:none;position:fixed;inset:0;background:rgba(10,13,20,.92);z-index:10000;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease;}
+.category-detail-modal.show{display:flex;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.category-detail-content{background:var(--sf);border:1px solid var(--bd);border-radius:18px;padding:28px;width:100%;max-width:700px;max-height:85vh;overflow-y:auto;animation:slideUp .25s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.category-detail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--bd);}
+.category-detail-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px;}
+.category-color-dot{width:14px;height:14px;border-radius:3px;flex-shrink:0;}
+.category-detail-close{background:var(--sf2);border:1px solid var(--bd);color:var(--mt);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.category-detail-close:hover{border-color:var(--dg);color:var(--dg);}
+.category-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.category-stat{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:14px;}
+.category-stat-label{font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.category-stat-value{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--tx);}
+.category-transactions-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;margin-bottom:12px;color:var(--mt);}
+.category-transaction-item{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;transition:all .15s;}
+.category-transaction-item:hover{background:var(--sf3);}
+.category-transaction-desc{flex:1;min-width:0;}
+.category-transaction-title{font-size:13px;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.category-transaction-meta{font-size:11px;color:var(--mt);}
+.category-transaction-value{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--dg);margin-left:16px;flex-shrink:0;}
+
 .tx-table{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;}
 .tx-head{display:grid;grid-template-columns:1fr 120px 80px 90px 90px 70px;padding:11px 20px;background:var(--sf2);border-bottom:1px solid var(--bd);font-size:10px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--mt);gap:10px;}
 .tx-row{display:grid;grid-template-columns:1fr 120px 80px 90px 90px 70px;padding:12px 20px;border-bottom:1px solid var(--bd);font-size:13px;align-items:center;gap:10px;transition:background .15s;cursor:pointer;}
@@ -287,7 +310,13 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:24px 0
       <div class="insight"><div class="insight-label">Taxa Poupança</div><div class="insight-val" id="i-save">—</div><div class="insight-sub">receita − despesa</div></div>
     </div>
     <div class="charts-grid">
-      <div class="chart-card"><div class="chart-title">Gastos por Categoria</div><div class="chart-wrap"><canvas id="donutChart"></canvas></div></div>
+      <div class="chart-card">
+        <div class="chart-title">
+          Gastos por Categoria
+          <span style="font-size:10px;color:var(--mt);font-weight:400;margin-left:8px;">👆 Clique para ver detalhes</span>
+        </div>
+        <div class="chart-wrap" style="cursor:pointer;"><canvas id="donutChart"></canvas></div>
+      </div>
       <div class="chart-card"><div class="chart-title">Top Categorias</div><div id="catList" style="margin-top:4px;max-height:260px;overflow-y:auto;"></div></div>
     </div>
   </div>
@@ -549,7 +578,7 @@ function renderIns(){
 function renderDonut(){
   var exp=filtered.filter(function(d){return d.tipo==='Despesa';}),ct={};exp.forEach(function(d){ct[d.cat]=(ct[d.cat]||0)+d.valor;});
   var s=Object.entries(ct).sort(function(a,b){return b[1]-a[1];}).slice(0,9);dC('donut');
-  charts['donut']=new Chart(document.getElementById('donutChart').getContext('2d'),{type:'doughnut',data:{labels:s.map(function(e){return e[0];}),datasets:[{data:s.map(function(e){return e[1];}),backgroundColor:s.map(function(e){return gc(e[0]);}),borderColor:'#111520',borderWidth:3,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'66%',plugins:{legend:{position:'bottom',labels:{color:'#6b7280',font:{family:'DM Sans',size:11},padding:10,boxWidth:9,boxHeight:9}},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return ' '+c.label+': '+fmt(c.raw);}}})}}});
+  charts['donut']=new Chart(document.getElementById('donutChart').getContext('2d'),{type:'doughnut',data:{labels:s.map(function(e){return e[0];}),datasets:[{data:s.map(function(e){return e[1];}),backgroundColor:s.map(function(e){return gc(e[0]);}),borderColor:'#111520',borderWidth:3,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'66%',plugins:{legend:{position:'bottom',labels:{color:'#6b7280',font:{family:'DM Sans',size:11},padding:10,boxWidth:9,boxHeight:9}},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return ' '+c.label+': '+fmt(c.raw);}}})},onClick:function(evt,activeElements){if(activeElements.length>0){var index=activeElements[0].index;var categoria=s[index][0];showCategoryDetail(categoria);}}}});
 }
 function renderCatList(){
   var exp=filtered.filter(function(d){return d.tipo==='Despesa';}),total=exp.reduce(function(s,d){return s+d.valor;},0),ct={};
@@ -635,6 +664,50 @@ function applyAdvancedFiltersToData(data){
     }
     return true;
   });
+}
+
+/* ═══ MODAL DETALHES CATEGORIA - FUNÇÕES ═══ */
+function showCategoryDetail(categoria){
+  var catTransactions=filtered.filter(function(d){return d.cat===categoria&&d.tipo==='Despesa';});
+  if(!catTransactions.length)return;
+  
+  var total=catTransactions.reduce(function(sum,d){return sum+d.valor;},0);
+  var count=catTransactions.length;
+  var avg=total/count;
+  
+  document.getElementById('catDetailName').textContent=categoria;
+  document.getElementById('catDetailColor').style.background=gc(categoria);
+  document.getElementById('catDetailTotal').textContent=fmt(total);
+  document.getElementById('catDetailCount').textContent=count;
+  document.getElementById('catDetailAvg').textContent=fmt(avg);
+  
+  catTransactions.sort(function(a,b){return b.valor-a.valor;});
+  
+  var html='';
+  catTransactions.forEach(function(d){
+    html+='<div class="category-transaction-item">';
+    html+='<div class="category-transaction-desc">';
+    html+='<div class="category-transaction-title">'+d.desc+'</div>';
+    html+='<div class="category-transaction-meta">'+d.data+(d.subcat?' • '+d.subcat:'')+(d.cartao?' • '+d.cartao:'')+'</div>';
+    html+='</div>';
+    html+='<div class="category-transaction-value">'+fmt(d.valor)+'</div>';
+    html+='</div>';
+  });
+  
+  document.getElementById('catDetailList').innerHTML=html;
+  document.getElementById('categoryDetailModal').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+
+function closeCategoryDetail(){
+  document.getElementById('categoryDetailModal').classList.remove('show');
+  document.body.style.overflow='auto';
+}
+
+function handleCategoryModalClick(event){
+  if(event.target.id==='categoryDetailModal'){
+    closeCategoryDetail();
+  }
 }
 
 function renderTx(){
@@ -793,5 +866,37 @@ document.addEventListener('DOMContentLoaded',function(){
 function init(){loadFallback();buildPills();populateForm();applyPF();doSync();}
 init();
 </script>
+
+<!-- ═══ MODAL DETALHES DA CATEGORIA ═══ -->
+<div class="category-detail-modal" id="categoryDetailModal" onclick="handleCategoryModalClick(event)">
+  <div class="category-detail-content" onclick="event.stopPropagation()">
+    <div class="category-detail-header">
+      <div class="category-detail-title">
+        <div class="category-color-dot" id="catDetailColor"></div>
+        <span id="catDetailName">Categoria</span>
+      </div>
+      <button class="category-detail-close" onclick="closeCategoryDetail()">✕</button>
+    </div>
+    
+    <div class="category-stats">
+      <div class="category-stat">
+        <div class="category-stat-label">Total Gasto</div>
+        <div class="category-stat-value" id="catDetailTotal">R$ 0,00</div>
+      </div>
+      <div class="category-stat">
+        <div class="category-stat-label">Nº Lançamentos</div>
+        <div class="category-stat-value" id="catDetailCount">0</div>
+      </div>
+      <div class="category-stat">
+        <div class="category-stat-label">Média por Item</div>
+        <div class="category-stat-value" id="catDetailAvg">R$ 0,00</div>
+      </div>
+    </div>
+    
+    <div class="category-transactions-title">📋 Lançamentos desta categoria</div>
+    <div id="catDetailList"></div>
+  </div>
+</div>
+
 </body>
 </html>
