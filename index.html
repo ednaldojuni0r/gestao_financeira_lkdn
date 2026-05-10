@@ -578,7 +578,55 @@ function renderIns(){
 function renderDonut(){
   var exp=filtered.filter(function(d){return d.tipo==='Despesa';}),ct={};exp.forEach(function(d){ct[d.cat]=(ct[d.cat]||0)+d.valor;});
   var s=Object.entries(ct).sort(function(a,b){return b[1]-a[1];}).slice(0,9);dC('donut');
-  charts['donut']=new Chart(document.getElementById('donutChart').getContext('2d'),{type:'doughnut',data:{labels:s.map(function(e){return e[0];}),datasets:[{data:s.map(function(e){return e[1];}),backgroundColor:s.map(function(e){return gc(e[0]);}),borderColor:'#111520',borderWidth:3,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'66%',plugins:{legend:{position:'bottom',labels:{color:'#6b7280',font:{family:'DM Sans',size:11},padding:10,boxWidth:9,boxHeight:9}},tooltip:Object.assign({},TT,{callbacks:{label:function(c){return ' '+c.label+': '+fmt(c.raw);}}})},onClick:function(evt,activeElements){if(activeElements.length>0){var index=activeElements[0].index;var categoria=s[index][0];showCategoryDetail(categoria);}}}});
+  
+  // Armazenar categorias globalmente para acesso no onClick
+  window.currentDonutCategories=s.map(function(e){return e[0];});
+  
+  var canvas=document.getElementById('donutChart');
+  charts['donut']=new Chart(canvas.getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:s.map(function(e){return e[0];}),
+      datasets:[{
+        data:s.map(function(e){return e[1];}),
+        backgroundColor:s.map(function(e){return gc(e[0]);}),
+        borderColor:'#111520',
+        borderWidth:3,
+        hoverOffset:6
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      cutout:'66%',
+      plugins:{
+        legend:{
+          position:'bottom',
+          labels:{
+            color:'#6b7280',
+            font:{family:'DM Sans',size:11},
+            padding:10,
+            boxWidth:9,
+            boxHeight:9
+          }
+        },
+        tooltip:Object.assign({},TT,{
+          callbacks:{
+            label:function(c){return ' '+c.label+': '+fmt(c.raw);}
+          }
+        })
+      },
+      onClick:function(evt,activeElements){
+        if(activeElements&&activeElements.length>0){
+          var index=activeElements[0].index;
+          var categoria=window.currentDonutCategories[index];
+          if(categoria){
+            showCategoryDetail(categoria);
+          }
+        }
+      }
+    }
+  });
 }
 function renderCatList(){
   var exp=filtered.filter(function(d){return d.tipo==='Despesa';}),total=exp.reduce(function(s,d){return s+d.valor;},0),ct={};
@@ -668,8 +716,15 @@ function applyAdvancedFiltersToData(data){
 
 /* ═══ MODAL DETALHES CATEGORIA - FUNÇÕES ═══ */
 function showCategoryDetail(categoria){
+  console.log('showCategoryDetail chamada com categoria:', categoria);
+  
   var catTransactions=filtered.filter(function(d){return d.cat===categoria&&d.tipo==='Despesa';});
-  if(!catTransactions.length)return;
+  console.log('Transações encontradas:', catTransactions.length);
+  
+  if(!catTransactions.length){
+    console.log('Nenhuma transação encontrada para', categoria);
+    return;
+  }
   
   var total=catTransactions.reduce(function(sum,d){return sum+d.valor;},0);
   var count=catTransactions.length;
@@ -697,6 +752,8 @@ function showCategoryDetail(categoria){
   document.getElementById('catDetailList').innerHTML=html;
   document.getElementById('categoryDetailModal').classList.add('show');
   document.body.style.overflow='hidden';
+  
+  console.log('Modal deveria estar visível agora');
 }
 
 function closeCategoryDetail(){
